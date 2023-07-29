@@ -73,26 +73,10 @@
     <script>
         const toggleSwitch = document.querySelector('#toggleSwitch');
 
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        let processor = audioContext.createScriptProcessor(1024, 1, 1);
-        processor.onaudioprocess = function(e) {
-            let output = e.outputBuffer.getChannelData(0);
-            for (let i = 0; i < output.length; i++) {
-                output[i] = Math.random() * 2 - 1;
-            }
-        }
-
-        const filter = audioContext.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.Q.value = 12.0;  
-
-        const compressor = audioContext.createDynamicsCompressor();
-        compressor.threshold.value = -50;
-        compressor.knee.value = 40;
-        compressor.ratio.value = 12;
-        compressor.attack.value = 0;
-        compressor.release.value = 0.25;
+        let audioContext;
+        let processor;
+        let filter;
+        let compressor;
 
         let isPlaying = false;  
         let lastEventTime = 0;
@@ -100,6 +84,28 @@
         let lastEventY = 0;
 
         toggleSwitch.addEventListener('change', () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                processor = audioContext.createScriptProcessor(1024, 1, 1);
+                processor.onaudioprocess = function(e) {
+                    let output = e.outputBuffer.getChannelData(0);
+                    for (let i = 0; i < output.length; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                }
+
+                filter = audioContext.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.Q.value = 12.0;  
+
+                compressor = audioContext.createDynamicsCompressor();
+                compressor.threshold.value = -50;
+                compressor.knee.value = 40;
+                compressor.ratio.value = 12;
+                compressor.attack.value = 0;
+                compressor.release.value = 0.25;
+            }
+
             if (toggleSwitch.checked) {
                 isPlaying = true;
                 processor.connect(filter);
